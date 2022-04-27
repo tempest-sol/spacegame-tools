@@ -37,6 +37,12 @@ const App: FC = () => {
         if (walletChecked) {
             if (networkId !== -1) {
                 // future placeholder for loading data
+                connect().then(() => {
+                    setWalletChecked(true);
+                }).catch((error) => {
+                    // rejection
+                    console.error(error);
+                });
             }
         }
     }, [walletChecked, networkId]);
