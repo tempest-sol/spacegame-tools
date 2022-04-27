@@ -1,0 +1,22 @@
+.connectWallet{
+    display: inline-block;
+    text-align: center;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    transition: background-color .3s, opacity .5s, visibility .5s;
+    visibility: visible;
+    z-index: 1000;
+    background-color: rgb(3, 109, 148);
+    font-size: 1em;
+    font-weight: bold;
+    margin: auto;
+    color: white;
+    border: 3px solid #000000;
+    border-radius: 5px 5px 5px 5px;
+}
+.connectWallet:hover{
+    color: white!important;
+}
+
+.rounded{border-radius:.25rem !important}
