@@ -54,8 +54,8 @@
   },
   "devDependencies": {
     "@typechain/ethers-v5": "^9.0.0",
-    "@types/react": "18.0.8",
-    "@types/react-dom": "18.0.8",
+    "@types/react": "^18.0.1",
+    "@types/react-dom": "^18.0.1",
     "@types/react-router-dom": "^5.3.3",
     "@types/shelljs": "^0.8.9",
     "@types/uuid": "^8.3.1",
