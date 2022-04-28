@@ -11,7 +11,7 @@ const darkTheme = {
   gold: "#F8CC82",
   gray: "#A3A3A3",
   textHighlightColor: "#F4D092",
-  backgroundColor: "rgba(8, 15, 53, 1)",
+  backgroundColor: "rgb(16,16,16)",
   background: `
     linear-gradient(180deg, rgba(8, 15, 53, 0), rgba(0, 0, 10, 0.9)),
     linear-gradient(333deg, rgba(153, 207, 255, 0.2), rgba(180, 255, 217, 0.08)),
@@ -21,7 +21,7 @@ const darkTheme = {
     radial-gradient(circle at 10% 0%, rgba(187, 211, 204, 0.33), rgba(187,211,204,0) 35%),
     radial-gradient(circle at 11% 100%, rgba(131, 165, 203, 0.3), rgba(131, 165, 203, 0) 30%)
     `,
-  paperBg: "rgba(54, 56, 64, 0.6)",
+  paperBg: "#0c0c0c",
   modalBg: "#24242699",
   popoverBg: "rgba(54, 56, 64, 0.99)",
   menuBg: handleBackdropFilter("rgba(54, 56, 64, 0.5)"),
@@ -43,6 +43,7 @@ const darkTheme = {
   gridButtonHoverBackground: "rgba(255, 255, 255, 0.6)",
   gridButtonActiveBackground: "#00000038",
   switchBg: "#333333",
+  paper: "#000"
 };
 
 export const dark = responsiveFontSizes(

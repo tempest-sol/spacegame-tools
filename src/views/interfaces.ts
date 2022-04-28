@@ -9,11 +9,12 @@ export interface IStakedMnA {
     level: number;
     rank: number;
     rewards: string;
-    endDate: string;
+    endDate: Date;
     lastClaim: string;
     unStakeTime: string;
     daily: string;
     image: string;
+    isAccruing: boolean;
 }
 
 export interface ILevelData {

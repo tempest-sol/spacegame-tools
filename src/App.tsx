@@ -7,8 +7,21 @@ import {BrowserRouter} from "react-router-dom";
 import store from "./redux/store";
 import Dashboard from "./views/Dashboard/Dashboard";
 import {Button} from "@material-ui/core";
+import {CssBaseline, ThemeProvider} from "@mui/material";
+import useTheme from "./hooks/useTheme";
+
+import {dark as darkTheme} from "./themes/dark.js";
+import {light as lightTheme} from "./themes/light.js";
+import {girth as gTheme} from "./themes/girth.js";
 
 const App: FC = () => {
+    const [theme, toggleTheme] = useTheme();
+    let themeMode = theme === "light" ? lightTheme : darkTheme;
+
+    useEffect(() => {
+        themeMode = theme === "light" ? lightTheme : darkTheme;
+    }, [theme]);
+
     const {
         connect,
         hasCachedProvider,

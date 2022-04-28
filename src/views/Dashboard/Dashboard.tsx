@@ -20,6 +20,12 @@ import {useWeb3Context} from "../../hooks/web3Context";
 import {ILevelData, IStakedMnA, IStakedMnAs} from "../interfaces";
 import moment from "moment";
 import {formatNumber, parseBigNumber} from "../../helpers";
+import EnhancedTable from "./InfoTable";
+
+import GitHubIcon from '@mui/icons-material/GitHub';
+import IconButton from "@mui/material/IconButton";
+import {faBold} from "@fortawesome/free-solid-svg-icons";
+import {Button, Link} from "@mui/material";
 
 const drawerWidth = 280;
 const transitionDuration = 969;
@@ -55,7 +61,51 @@ const useStyles = makeStyles(theme => ({
     drawerPaper: {
         width: drawerWidth,
     },
+    paperBox: {
+        marginTop: theme.spacing(2),
+        marginBottom: theme.spacing(2),
+        padding: theme.spacing(2)
+    }
 }));
+
+const headCells = [
+    {
+        id: 'State',
+        label: 'state'
+    },
+        {
+            id: 'Type',
+            label: 'type'
+        },
+        {
+            id: 'Token Id',
+            label: 'tokenId'
+        },
+        {
+            id: 'Current Level',
+            label: 'level'
+        },
+        {
+            id: '$KLAYE Rewards',
+            label: 'rewards'
+        },
+        {
+            id: 'Remaining Time',
+            label: 'remaining'
+        },
+        {
+            id: 'Last Klayme',
+            label: 'last'
+        },
+        {
+            id: 'Daily Accrual',
+            label: 'daily'
+        },
+        {
+            id: 'UnStake Date',
+            label: 'unstake'
+        }
+]
 
 function Dashboard() {
     const classes = useStyles();
@@ -104,17 +154,21 @@ function Dashboard() {
                 const marineLevelData = await calcContract.getTokenLevels(marineIds);
                 const marineLevels = Object.assign({}, ...marineLevelData.map((x: BigNumber, i: number) => ({[marineIds[i]]: x})));
 
+                let dailyAccrual = 0;
+
                 const marines = await Promise.all(
                     data.klayeStakes.filter((stake) => stake.type === 'Marine')
                         .map(async (marine) => {
                             const endDate = moment(new Date((await calcContract.getLevelEndTimestamp(marine.tokenId)) * 1000))
                             let diff = moment.duration(endDate.diff(currentDate));
-                            marine.endDate = `${diff.days()} days, ${diff.hours()} hours, ${diff.minutes()} minutes, ${diff.seconds()} seconds`;
+                            const accruing = endDate.isBefore(currentDate)
+                            marine.endDate = endDate.toDate()
+                            marine.isAccruing = accruing
                             const rewards = await stakingContract.calculateRewards(marine.tokenId);
                             marine.rewards = formatNumber(parseBigNumber(rewards, 18), 4).toString();
                             const lastClaimDate = moment(new Date(dictionary[marine.tokenId].lastClaimTime * 1000))
                             diff = moment.duration(currentDate.diff(lastClaimDate));
-                            marine.lastClaim = `${diff.days()} days, ${diff.hours()} hours, ${diff.minutes()} minutes, ${diff.seconds()} seconds ago`;
+                            marine.lastClaim = `${diff.days()}:${diff.hours()}:${diff.minutes()}:${diff.seconds()} ago`;
                             marine.level = (marineLevels[marine.tokenId]).toNumber();
 
                             const levelData = (await calcContract.getLevelData([marine.level])).map((data: ILevelData) => data);
@@ -122,6 +176,7 @@ function Dashboard() {
                             const totalDays = BigNumber.from(ethers.utils.parseEther("3")).div(daily)
                             //let days = moment.duration(marineData[marine.tokenId].startTime.add(levelData.maxRewardDuration))
                             marine.unStakeTime = `${totalDays} days`;
+                            dailyAccrual += daily
                             marine.daily = formatNumber(parseBigNumber(daily, 18), 2).toString();
                             accumulatedKlaye = accumulatedKlaye.add(rewards);
                             let json = (await mnaContract.tokenURI(marine.tokenId));
@@ -152,132 +207,38 @@ function Dashboard() {
             console.error(e)
         }
     }, [connected])
-
     return (
         <div className={`${classes.content} ${isSmallerScreen && classes.contentShift}`}>
-            <Paper>
-                <Paper>
-                    <Grid container item>
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>
-                                        Staked Marines
-                                    </TableCell>
-                                    <TableCell>
-                                        Staked Aliens
-                                    </TableCell>
-                                    <TableCell>
-                                        Claimable $KLAYE (Marines)
-                                    </TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                <TableRow>
-                                    <TableCell>
-                                        <Typography>
-                                            {stakedMarines.length}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography>
-                                            {stakedAliens.length}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography>
-                                            {claimableKlaye}
-                                        </Typography>
-                                    </TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
+            <Paper className={classes.paperBox} elevation={4}>
+                <Grid container spacing={2} justifyContent={"space-between"}>
+                    <Grid item>
+                        <Button disabled={true}>Leaderboard</Button>
                     </Grid>
-                </Paper>
-                <Paper>
-                    <Grid container item>
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>
-                                        Type
-                                    </TableCell>
-                                    <TableCell>
-                                        Token Id
-                                    </TableCell>
-                                    <TableCell>
-                                        Current Level
-                                    </TableCell>
-                                    <TableCell>
-                                        $KLAYE Rewards
-                                    </TableCell>
-                                    <TableCell>
-                                        Remaining Time
-                                    </TableCell>
-                                    <TableCell>
-                                        Last Claim
-                                    </TableCell>
-                                    <TableCell>
-                                        Daily Accrual
-                                    </TableCell>
-                                    <TableCell>
-                                        UnStake Date
-                                    </TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {
-                                    (stakedMarines).map((stake, i) => {
-                                        return (
-                                            <TableRow key={i}>
-                                                <TableCell>
-                                                    <Typography>
-                                                        <img src={`${stake.image}`}/>
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Typography>
-                                                        {stake.id}
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Typography>
-                                                        {stake.level}
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Typography>
-                                                        {stake.rewards}
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Typography>
-                                                        {stake.endDate.toString()}
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Typography>
-                                                        {stake.lastClaim.toString()}
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Typography>
-                                                        {stake.daily}
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Typography>
-                                                        TBD
-                                                    </Typography>
-                                                </TableCell>
-                                            </TableRow>
-                                        )
-                                    })
-                                }
-                            </TableBody>
-                        </Table>
+                </Grid>
+            </Paper>
+            <EnhancedTable staked={stakedMarines}/>
+            <Paper className={classes.paperBox} elevation={4}>
+                <Grid container spacing={2} justifyContent={"space-between"} alignItems={"center"}>
+                    <Grid item>
+                        <Paper elevation={0}>
+                            <IconButton
+                                size="medium"
+                                onClick={() => {
+                                    window.open(`https://github.com/tempest-sol/spacegame-tools`)
+                                }}
+                            >
+                                <GitHubIcon fontSize={"medium"}/>
+                            </IconButton>
+                        </Paper>
                     </Grid>
-                </Paper>
+                    <Grid item>
+                        <Paper elevation={0}>
+                            <Typography>
+                                <strong>Created by Tempest</strong>
+                            </Typography>
+                        </Paper>
+                    </Grid>
+                </Grid>
             </Paper>
         </div>
     );

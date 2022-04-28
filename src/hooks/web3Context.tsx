@@ -85,7 +85,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
     // ... so I changed these listeners so that they only apply to walletProviders, eliminating
     // ... polling to the backend providers for network changes
     const _initListeners = useCallback(
-        (rawProvider) => {
+        (rawProvider: any) => {
             if (!rawProvider.on) {
                 return;
             }
