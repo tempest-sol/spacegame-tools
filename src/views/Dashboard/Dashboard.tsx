@@ -126,17 +126,17 @@ function Dashboard() {
             const load = async () => {
                 let endpoint = "https://api.thegraph.com/subgraphs/name/cryptodev130/spacegame-runtime-matic-v2"
                 let query = gql`{
-                klayeStakes(
-                    first: 500
-                    where: {account: \"${address}\", status: Staked}
-                ) {
-                    id
-                    account
-                    tokenId
-                    type
-                    timestamp
-                }
-            }`
+                    klayeStakes(
+                        first: 500
+                        where: {account: \"${address}\", status: Staked}
+                    ) {
+                        id
+                        account
+                        tokenId
+                        type
+                        timestamp
+                    }
+                }`
 
                 const mnaContract = new Contract("0x017bd8887521444ff8Fbce992A37a2FE53057149", mna, provider);
                 const calcContract = new Contract("0xfF10bD1baacCfbE0B797f5B6EfF20f28aD4faE62", calc, provider);
@@ -208,7 +208,7 @@ function Dashboard() {
         }
     }, [connected])
     return (
-        <div className={`${classes.content} ${isSmallerScreen && classes.contentShift}`}>
+        <div className={!isSmallerScreen ? `${classes.content} ${isSmallerScreen && classes.contentShift}` : ""}>
             <Paper className={classes.paperBox} elevation={4}>
                 <Grid container spacing={2} justifyContent={"space-between"}>
                     <Grid item>
