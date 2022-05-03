@@ -15,6 +15,8 @@ export interface IStakedMnA {
     daily: string;
     image: string;
     isAccruing: boolean;
+    canUnStake: boolean;
+    generation: number;
 }
 
 export interface ILevelData {

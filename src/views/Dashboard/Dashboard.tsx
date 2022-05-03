@@ -13,6 +13,7 @@ import {
 import React, {useEffect, useState} from "react";
 import {gql, request} from "graphql-request";
 import {abi as mna} from "../../assets/contracts/MnAv2.json";
+import {abi as mnav1} from "../../assets/contracts/MnA.json";
 import {abi as calc} from "../../assets/contracts/SpaceGameCalculator.json";
 import {abi as staking} from "../../assets/contracts/StakingPoolv2.json";
 import {BigNumber, Contract, ethers} from "ethers";
@@ -138,9 +139,16 @@ function Dashboard() {
                     }
                 }`
 
-                const mnaContract = new Contract("0x017bd8887521444ff8Fbce992A37a2FE53057149", mna, provider);
-                const calcContract = new Contract("0xfF10bD1baacCfbE0B797f5B6EfF20f28aD4faE62", calc, provider);
-                const stakingContract = new Contract("0x74f120f659aDEBd48414f4CbB2d5BB294452F625", staking, provider);
+                const mnaContract = new Contract("0x017bd8887521444ff8Fbce992A37a2FE53057149", mna, provider.getSigner());
+                const calcContract = new Contract("0xfF10bD1baacCfbE0B797f5B6EfF20f28aD4faE62", calc, provider.getSigner());
+                const stakingContract = new Contract("0x74f120f659aDEBd48414f4CbB2d5BB294452F625", staking, provider.getSigner());
+                const mnav1Contract = new Contract("0xdbe147fc80b49871e2a8D60cc89D51b11bc88b35", mnav1, provider.getSigner());
+
+/*                if(address) {
+                    let owner = await mnaContract.ownerOf(17660)
+                    console.log("owner: ", owner)
+                    await stakingContract.claimManyFromMarinePoolAndAlienPool([17660], false);
+                }*/
 
                 const data = await request<IStakedMnAs>(endpoint, query);
                 const num = await provider.getBlockNumber()
@@ -165,12 +173,15 @@ function Dashboard() {
                             marine.endDate = endDate.toDate()
                             marine.isAccruing = accruing
                             const rewards = await stakingContract.calculateRewards(marine.tokenId);
-                            marine.rewards = formatNumber(parseBigNumber(rewards, 18), 4).toString();
+                            const rewardsNumber = (parseBigNumber(rewards, 18) - (parseBigNumber(rewards, 18)) * 0.2);
+                            marine.rewards = formatNumber(rewardsNumber, 4);
                             const lastClaimDate = moment(new Date(dictionary[marine.tokenId].lastClaimTime * 1000))
                             diff = moment.duration(currentDate.diff(lastClaimDate));
                             marine.lastClaim = `${diff.days()}:${diff.hours()}:${diff.minutes()}:${diff.seconds()} ago`;
                             marine.level = (marineLevels[marine.tokenId]).toNumber();
-
+                            const gen0 = marine.tokenId <= parseBigNumber((await mnav1Contract.getPaidTokens()));
+                            marine.canUnStake = rewardsNumber >= 3.0
+                            marine.generation = gen0 ? 0 : 1;
                             const levelData = (await calcContract.getLevelData([marine.level])).map((data: ILevelData) => data);
                             let daily = levelData[0].klayePerDay;
                             const totalDays = BigNumber.from(ethers.utils.parseEther("3")).div(daily)
@@ -213,6 +224,38 @@ function Dashboard() {
                 <Grid container spacing={2} justifyContent={"space-between"}>
                     <Grid item>
                         <Button disabled={true}>Leaderboard</Button>
+                    </Grid>
+                </Grid>
+            </Paper>
+            <Paper className={classes.paperBox} elevation={4}>
+                <Grid container spacing={2}>
+                    <Grid item>
+                        <Typography>
+                            <strong>Information</strong>
+                        </Typography>
+                    </Grid>
+                    <Grid container item spacing={2}>
+                        <Grid container item>
+                            <Paper elevation={4}>
+                                <Grid item>
+                                    <Typography style={{padding: "6px"}}>
+                                        <strong>Claimable $KLAYE</strong> is considering the 20% tax being taken after unstaking.
+                                    </Typography>
+                                    <Typography style={{padding: "6px"}}>
+                                        <strong>Status Colors:</strong>
+                                        <p>
+                                            <strong><span style={{color:"#fa7070"}}>Red</span>: </strong>Stopped accruing rewards, level up your marine!
+                                        </p>
+                                        <p>
+                                            <strong><span style={{color:"#9ca900"}}>Yellow</span>: </strong>Still accruing rewards, cannot unstake.
+                                        </p>
+                                        <p>
+                                            <strong><span style={{color:"#7af579"}}>Green</span>: </strong>Still accruing rewards and able to unstake.
+                                        </p>
+                                    </Typography>
+                                </Grid>
+                            </Paper>
+                        </Grid>
                     </Grid>
                 </Grid>
             </Paper>

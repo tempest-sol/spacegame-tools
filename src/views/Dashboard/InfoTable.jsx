@@ -59,6 +59,12 @@ function stableSort(array, comparator) {
 
 const headCells = [
     {
+        id: 'unstakeable',
+        numeric: false,
+        disablePadding: false,
+        label: 'Unstakeable',
+    },
+    {
         id: 'status',
         numeric: false,
         disablePadding: false,
@@ -299,7 +305,8 @@ export default function EnhancedTable(staked) {
                                             tabIndex={-1}
                                             key={row.tokenId}
                                             selected={isItemSelected}
-                                            style={{backgroundColor: `${row.isAccruing ? "#fa7070" : "#7af579"}`}}
+                                            style={{backgroundColor: `${row.isAccruing ? "#fa7070" 
+                                                    : row.canUnStake ? "#7af579" : "#9ca900"}`}}
                                         >
                                             <TableCell>
                                                 <IconButton
@@ -312,12 +319,21 @@ export default function EnhancedTable(staked) {
                                                     <FeedIcon/>
                                                 </IconButton>
                                             </TableCell>
-                                            <TableCell padding="checkbox">
+                                            <TableCell>
+                                                <Typography>
+                                                    {
+                                                        row.canUnStake
+                                                            ? <strong>Yes</strong>
+                                                            : <strong>No</strong>
+                                                    }
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
                                                 <Typography>
                                                     {
                                                         row.isAccruing
                                                             ? <strong style={{ color: "red" }}>Needs attention</strong>
-                                                            : <strong style={{ color: "green" }}>Okay</strong>
+                                                            : <strong style={{ color: "yellow" }}>Okay</strong>
                                                     }
                                                 </Typography>
                                             </TableCell>
@@ -327,7 +343,12 @@ export default function EnhancedTable(staked) {
                                                 scope="row"
                                                 padding="none"
                                             >
-                                                <img style={{ paddingTop: "5px" }} src={`${row.image}`}/>
+                                                <Grid container>
+                                                    <Grid item>
+                                                        <img style={{ paddingTop: "5px" }} src={`${row.image}`}/>
+                                                        <Typography>Gen {row.generation}</Typography>
+                                                    </Grid>
+                                                </Grid>
                                             </TableCell>
                                             <TableCell align="center">{row.tokenId}</TableCell>
                                             <TableCell align="center">{row.level}</TableCell>
