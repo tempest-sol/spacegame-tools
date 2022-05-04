@@ -179,7 +179,7 @@ function Dashboard() {
                             diff = moment.duration(currentDate.diff(lastClaimDate));
                             marine.lastClaim = `${diff.days()}:${diff.hours()}:${diff.minutes()}:${diff.seconds()} ago`;
                             marine.level = (marineLevels[marine.tokenId]).toNumber();
-                            const gen0 = marine.tokenId <= parseBigNumber((await mnav1Contract.getPaidTokens()));
+                            const gen0 = marine.tokenId <= 6969;
                             marine.canUnStake = rewardsNumber >= 3.0
                             marine.generation = gen0 ? 0 : 1;
                             const levelData = (await calcContract.getLevelData([marine.level])).map((data: ILevelData) => data);
