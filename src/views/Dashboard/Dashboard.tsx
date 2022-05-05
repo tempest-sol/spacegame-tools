@@ -1,15 +1,4 @@
-import {
-    Grid,
-    makeStyles,
-    Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Typography,
-    useMediaQuery
-} from "@material-ui/core";
+import {Grid, makeStyles, Paper, Typography, useMediaQuery} from "@material-ui/core";
 import React, {useEffect, useState} from "react";
 import {gql, request} from "graphql-request";
 import {abi as mna} from "../../assets/contracts/MnAv2.json";
@@ -25,8 +14,8 @@ import EnhancedTable from "./InfoTable";
 
 import GitHubIcon from '@mui/icons-material/GitHub';
 import IconButton from "@mui/material/IconButton";
-import {faBold} from "@fortawesome/free-solid-svg-icons";
-import {Button, Link} from "@mui/material";
+import {Button} from "@mui/material";
+import UnstakedTable from "./UnstakedTable";
 
 const drawerWidth = 280;
 const transitionDuration = 969;
@@ -117,6 +106,7 @@ function Dashboard() {
         address
     } = useWeb3Context();
     const [stakedMarines, setStakedMarines] = useState(new Array<IStakedMnA>())
+    const [unstakedMarines, setUnstakedMarines] = useState(new Array<IStakedMnA>())
     const [stakedAliens, setStakedAliens] = useState(new Array<IStakedMnA>())
     const [claimableKlaye, setClaimableKlaye] = useState("0")
 
@@ -163,6 +153,65 @@ function Dashboard() {
                 const marineLevels = Object.assign({}, ...marineLevelData.map((x: BigNumber, i: number) => ({[marineIds[i]]: x})));
 
                 let dailyAccrual = 0;
+
+                /*function tokensOfOwner(address _owner) external view returns (uint256[] memory) {
+                    require(_owner != address(0), "owner_zero_address");
+                    uint256 tokenCount = balanceOf(_owner);
+                    if (tokenCount <= 0) {
+                        // Return an empty array
+                        return new uint256[](0);
+                    } else {
+                        uint256[] memory result = new uint256[](tokenCount);
+                        uint256 index;
+                        for (index = 0; index < tokenCount; index++) {
+                            result[index] = tokenOfOwnerByIndex(_owner, index);
+                        }
+                        return result;
+                    }
+                }*/
+
+                const tokenIds: number[] = [24905];
+                const balance = await mnaContract.balanceOf(address);
+                for (let i = 0; i < parseBigNumber(balance, 18); i++) {
+                    tokenIds[i] = await mnaContract.tokenOfOwnerByIndex(address, i);
+                }
+
+                const unm: any[] = await calcContract.getMarinePoolData(tokenIds);
+                let unstakedDict = Object.assign({}, ...unm.map((x: IStakedMnA) => ({[x.tokenId]: x})));
+                const unmarineLevelData = await calcContract.getTokenLevels(tokenIds);
+                const unmarineLevels = Object.assign({}, ...unmarineLevelData.map((x: BigNumber, i: number) => ({[tokenIds[i]]: x})));
+
+                const unstakedMarineRecords = await Promise.all(
+                    unm.map(async (_marine) => {
+                        let marine: IStakedMnA = {
+                            account: "",
+                            canUnStake: false,
+                            daily: "",
+                            id: 0,
+                            lastClaimTimestamp: 0,
+                            rank: 0,
+                            rewards: "",
+                            timestamp: 0,
+                            type: "",
+                            unStakeTime: "",
+                            endDate: new Date(),
+                            generation: 0, image: "", isAccruing: false, level: 0,
+                            tokenId: _marine.tokenId.toNumber(),
+                            lastClaim: ""
+                        };
+                        marine.level = unmarineLevels[marine.tokenId].toNumber();
+                        marine.isAccruing = await stakingContract.canStake(marine.tokenId, marine.level);
+                        const gen0 = marine.tokenId <= 6969;
+                        marine.generation = gen0 ? 0 : 1;
+                        let json = (await mnaContract.tokenURI(marine.tokenId));
+                        json = json.substring(json.lastIndexOf(","))
+                        let decodedData = JSON.parse(Buffer.from(json, 'base64').toString());
+                        marine.image = decodedData.image
+                        return marine
+                    })
+                )
+
+                setUnstakedMarines(unstakedMarineRecords);
 
                 const marines = await Promise.all(
                     data.klayeStakes.filter((stake) => stake.type === 'Marine')
@@ -260,6 +309,8 @@ function Dashboard() {
                 </Grid>
             </Paper>
             <EnhancedTable staked={stakedMarines}/>
+            < br/>
+            <UnstakedTable unstaked={unstakedMarines}/>
             <Paper className={classes.paperBox} elevation={4}>
                 <Grid container spacing={2} justifyContent={"space-between"} alignItems={"center"}>
                     <Grid item>

@@ -17,6 +17,7 @@ export interface IStakedMnA {
     isAccruing: boolean;
     canUnStake: boolean;
     generation: number;
+    lastClaimTimestamp: number;
 }
 
 export interface ILevelData {
@@ -25,4 +26,15 @@ export interface ILevelData {
 
 export interface IStakedMnAs {
     readonly klayeStakes: IStakedMnA[];
+}
+
+export class MarineRecord {
+    id: number;
+    img: string;
+    record: IStakedMnA;
+    constructor(id: number, img: string, record: IStakedMnA) {
+        this.id = id;
+        this.img = img;
+        this.record = record;
+    }
 }
