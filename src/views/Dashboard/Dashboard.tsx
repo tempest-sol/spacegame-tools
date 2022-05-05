@@ -154,25 +154,9 @@ function Dashboard() {
 
                 let dailyAccrual = 0;
 
-                /*function tokensOfOwner(address _owner) external view returns (uint256[] memory) {
-                    require(_owner != address(0), "owner_zero_address");
-                    uint256 tokenCount = balanceOf(_owner);
-                    if (tokenCount <= 0) {
-                        // Return an empty array
-                        return new uint256[](0);
-                    } else {
-                        uint256[] memory result = new uint256[](tokenCount);
-                        uint256 index;
-                        for (index = 0; index < tokenCount; index++) {
-                            result[index] = tokenOfOwnerByIndex(_owner, index);
-                        }
-                        return result;
-                    }
-                }*/
-
-                const tokenIds: number[] = [24905];
+                const tokenIds: number[] = [];
                 const balance = await mnaContract.balanceOf(address);
-                for (let i = 0; i < parseBigNumber(balance, 18); i++) {
+                for (let i = 0; i < balance.toNumber(); i++) {
                     tokenIds[i] = await mnaContract.tokenOfOwnerByIndex(address, i);
                 }
 
